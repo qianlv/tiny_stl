@@ -1,0 +1,27 @@
+*.o
+*.swp
+*.swo
+*.h.gch
+.deps
+Makefile
+Makefile.in
+
+# autoconf, automake
+INSTALL
+aclocal.m4
+autom4te.cache
+config.h
+config.h.in
+config.log
+config.status
+configure
+depcomp
+install-sh
+ltmain.sh
+missing
+stamp-h1
+autoscan.log
+compile
+
+# 二进制文件
+test/unit_test
