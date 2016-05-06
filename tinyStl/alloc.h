@@ -20,28 +20,31 @@
 #define TINY_STL_ALLOC_H_
 
 #include <iostream>
+#include <new>
+#include <stdlib.h>
+#include <string.h>
 
 namespace tinystl
 {
 
     class MallocAlloc
     {
+        typedef void (*malloc_handler)();
     public:
         static void* allocate(size_t n);
-        static void* deallocate(void* p, size_t /* n */);
+        static void  deallocate(void* p, size_t /* n */);
         static void* reallocate(void* p, size_t /* old_sz */, size_t new_sz);
-        static malloc_handler set_malloc_handler(malloc_handler handler) noexcept;
+        static malloc_handler set_malloc_handler(malloc_handler handler);
 
     private:
         static void* oom_malloc(size_t n);
         static void* oom_realloc(void* p, size_t n);
 
     private:
-        typedef void (*malloc_handler)();
         static malloc_handler malloc_oom_hanlder;
     };
 
-    MallocAlloc::malloc_oom_hanlder = nullptr;
+    MallocAlloc:: malloc_handler MallocAlloc::malloc_oom_hanlder = nullptr;
 
     void* MallocAlloc::allocate(size_t n)
     {
@@ -51,7 +54,7 @@ namespace tinystl
         return result;
     }
 
-    void* MallocAlloc::deallocate(void* p, size_t /* n */)
+    void MallocAlloc::deallocate(void* p, size_t /* n */)
     {
         free(p);
     }
@@ -67,7 +70,7 @@ namespace tinystl
     /* set out of memory handling, 类似 new 的 set_new_handler, 可以参考: http://www.cplusplus.com/reference/new/set_new_handler/ 
      * 和 Effective C++ 的 Item 49
      * */
-    MallocAlloc::malloc_handler MallocAlloc::set_malloc_handler(malloc_handler handler)
+    MallocAlloc::malloc_handler MallocAlloc::set_malloc_handler(MallocAlloc::malloc_handler handler)
     {
         malloc_handler old = malloc_oom_hanlder;
         malloc_oom_hanlder = handler;
@@ -122,7 +125,7 @@ namespace tinystl
     {
     public:
         static void* allocate(size_t n);
-        static void* deallocate(void* p, size_t n);
+        static void  deallocate(void* p, size_t n);
         static void* reallocate(void* p, size_t old_sz, size_t new_sz);
 
     private:
@@ -143,7 +146,7 @@ namespace tinystl
          */
         static size_t FREELIST_INDEX(size_t bytes)
         {
-            return (bytes + ALIGN - 1) / ALIGN
+            return (bytes + ALIGN - 1) / ALIGN;
         }
     private:
         static const size_t ALIGN = 8;
@@ -165,13 +168,13 @@ namespace tinystl
         static size_t heap_size;
     };
 
-    const size_t Alloc::Alloc;
-    const size_t Alloc::MAX_BYTES;
-    const size_t Alloc::NFREELISTS;
+    // const size_t Alloc::Alloc;
+    // const size_t Alloc::MAX_BYTES;
+    // const size_t Alloc::NFREELISTS;
 
-    Alloc::obj* Alloc::free_lists = {
+    Alloc::obj* Alloc::free_lists[Alloc::NFREELISTS] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }
+    };
 
     char* Alloc::start_free = nullptr;
     char* Alloc::end_free = nullptr;
@@ -182,7 +185,7 @@ namespace tinystl
         if (n > MAX_BYTES)
             return MallocAlloc::allocate(n);
         size_t index = FREELIST_INDEX(n);
-        obj* free_item = free_list[index];
+        obj* free_item = free_lists[index];
         if (static_cast<obj*>(0) == free_item)
         {
             void* r = refill(ROUND_UP(n));
@@ -200,10 +203,11 @@ namespace tinystl
         }
         else
         {
+            obj* q = static_cast<obj*>(p);
             size_t index = FREELIST_INDEX(n);
             obj* cur = free_lists[index];
-            p->next = cur;
-            free_lists[index] = p;
+            q->next = cur;
+            free_lists[index] = q;
         }
     }
 
@@ -229,7 +233,7 @@ namespace tinystl
             return chunk;
         }
 
-        free_lists[FREELIST_INDEX[n]] = static_cast<obj*>(chunk + n);
+        free_lists[FREELIST_INDEX(n)] = (obj*)(chunk + n);
         obj* cur = free_lists[FREELIST_INDEX(n)];
         obj* next = nullptr;
         for (int i = 1; ; ++i)
@@ -239,7 +243,7 @@ namespace tinystl
                 cur->next = nullptr;
                 break;
             }
-            next = static_cast<obj*>((static_cast<char*>(cur) + n));
+            next = (obj*)((char*)cur + n);
             cur->next = next;
             cur = next;
         }
@@ -270,7 +274,7 @@ namespace tinystl
             if (left_bytes > 0)                 /* 多余内存分配给 free_lists */
             {
                 obj* free_item = free_lists[FREELIST_INDEX(left_bytes)];
-                obj* cur = static_cast<obj*>(start_free);
+                obj* cur = (obj*)(start_free);
                 cur->next = free_item;
                 free_item = cur;
                 // start_free += left_bytes;
@@ -286,7 +290,7 @@ namespace tinystl
                     {
                         obj* p = free_item;
                         free_item = p->next;
-                        start_free = static_cast<char*>(p);
+                        start_free = (char*)(p);
                         end_free = start_free + i;
                         return chunk_alloc(n, nobjs);
                     }
