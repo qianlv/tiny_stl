@@ -26,7 +26,8 @@
 
 namespace tinystl
 {
-
+    
+    template <int inst>
     class MallocAlloc
     {
         typedef void (*malloc_handler)();
@@ -44,9 +45,12 @@ namespace tinystl
         static malloc_handler malloc_oom_hanlder;
     };
 
-    MallocAlloc:: malloc_handler MallocAlloc::malloc_oom_hanlder = nullptr;
+    template <int inst>
+    typename MallocAlloc<inst>::malloc_handler
+    MallocAlloc<inst>::malloc_oom_hanlder = nullptr;
 
-    void* MallocAlloc::allocate(size_t n)
+    template <int inst>
+    void* MallocAlloc<inst>::allocate(size_t n)
     {
         void* result = malloc(n);
         if (result == 0)
@@ -54,12 +58,14 @@ namespace tinystl
         return result;
     }
 
-    void MallocAlloc::deallocate(void* p, size_t /* n */)
+    template <int inst>
+    void MallocAlloc<inst>::deallocate(void* p, size_t /* n */)
     {
         free(p);
     }
 
-    void* MallocAlloc::reallocate(void* p, size_t /* old_sz */, size_t new_sz)
+    template <int inst>
+    void* MallocAlloc<inst>::reallocate(void* p, size_t /* old_sz */, size_t new_sz)
     {
         void* result = realloc(p, new_sz);
         if (result == 0)
@@ -70,14 +76,17 @@ namespace tinystl
     /* set out of memory handling, 类似 new 的 set_new_handler, 可以参考: http://www.cplusplus.com/reference/new/set_new_handler/ 
      * 和 Effective C++ 的 Item 49
      * */
-    MallocAlloc::malloc_handler MallocAlloc::set_malloc_handler(MallocAlloc::malloc_handler handler)
+    template <int inst>
+    typename MallocAlloc<inst>::malloc_handler 
+    MallocAlloc<inst>::set_malloc_handler(MallocAlloc::malloc_handler handler)
     {
         malloc_handler old = malloc_oom_hanlder;
         malloc_oom_hanlder = handler;
         return old;
     }
 
-    void* MallocAlloc::oom_malloc(size_t n)
+    template <int inst>
+    void* MallocAlloc<inst>::oom_malloc(size_t n)
     {
         malloc_handler cur_handler = nullptr;
         void* result = nullptr;
@@ -99,7 +108,8 @@ namespace tinystl
         }
     }
 
-    void* MallocAlloc::oom_realloc(void* p, size_t n)
+    template <int inst>
+    void* MallocAlloc<inst>::oom_realloc(void* p, size_t n)
     {
         malloc_handler cur_handler = nullptr;
         void* result = nullptr;
@@ -121,6 +131,9 @@ namespace tinystl
         }
     }
 
+    typedef MallocAlloc<0> simple_alloc;
+
+    template <int inst>
     class Alloc
     {
     public:
@@ -172,18 +185,20 @@ namespace tinystl
     // const size_t Alloc::MAX_BYTES;
     // const size_t Alloc::NFREELISTS;
 
-    Alloc::obj* Alloc::free_lists[Alloc::NFREELISTS] = {
+    template <int inst>
+    typename Alloc<inst>::obj* Alloc<inst>::free_lists[Alloc::NFREELISTS] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
-    char* Alloc::start_free = nullptr;
-    char* Alloc::end_free = nullptr;
-    size_t Alloc::heap_size = 0;
+    template <int inst> char* Alloc<inst>::start_free = nullptr;
+    template <int inst> char* Alloc<inst>::end_free = nullptr;
+    template <int inst> size_t Alloc<inst>::heap_size = 0;
 
-    void* Alloc::allocate(size_t n)
+    template <int inst>
+    void* Alloc<inst>::allocate(size_t n)
     {
         if (n > MAX_BYTES)
-            return MallocAlloc::allocate(n);
+            return simple_alloc::allocate(n);
         size_t index = FREELIST_INDEX(n);
         obj* free_item = free_lists[index];
         if (static_cast<obj*>(0) == free_item)
@@ -194,12 +209,13 @@ namespace tinystl
         free_lists[index] = free_item->next;
         return free_item;
     }
-
-    void Alloc::deallocate(void* p, size_t n)
+    
+    template <int inst>
+    void Alloc<inst>::deallocate(void* p, size_t n)
     {
         if (n > MAX_BYTES)
         {
-            MallocAlloc::deallocate(p, n);
+            simple_alloc::deallocate(p, n);
         }
         else
         {
@@ -211,7 +227,8 @@ namespace tinystl
         }
     }
 
-    void* Alloc::reallocate(void* p, size_t old_sz, size_t new_sz)
+    template <int inst>
+    void* Alloc<inst>::reallocate(void* p, size_t old_sz, size_t new_sz)
     {
         if (old_sz > MAX_BYTES && new_sz > MAX_BYTES)
             return realloc(p, new_sz);
@@ -224,7 +241,8 @@ namespace tinystl
         return result;
     }
 
-    void* Alloc::refill(size_t n)
+    template <int inst>
+    void* Alloc<inst>::refill(size_t n)
     {
         int nobjs = 20;
         char* chunk = chunk_alloc(n, nobjs);
@@ -250,7 +268,8 @@ namespace tinystl
         return chunk;
     }
 
-    char* Alloc::chunk_alloc(size_t n, int& nobjs)
+    template <int inst>
+    char* Alloc<inst>::chunk_alloc(size_t n, int& nobjs)
     {
         char* result;
         size_t total_bytes = n * nobjs;
@@ -297,13 +316,16 @@ namespace tinystl
                 }
                 end_free = 0;
                 // MallocAlloc, 如果 malloc_handler (out of memery) 也无法获取内存, throw exception.
-                start_free = static_cast<char*>(MallocAlloc::allocate(bytes_to_get));
+                start_free = static_cast<char*>(simple_alloc::allocate(bytes_to_get));
             }
             heap_size += bytes_to_get;
             end_free = start_free + bytes_to_get;
             return chunk_alloc(n, nobjs);
         }
     }
+
+    typedef Alloc<0> alloc;
+
 } // end namespace tinystl
 
 #endif // TINY_STL_ALLOC_H_
