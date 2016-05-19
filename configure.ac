@@ -27,5 +27,9 @@ AC_CHECK_HEADER_STDBOOL
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 
-AC_CONFIG_FILES([Makefile test/Makefile])
+AC_CONFIG_FILES([Makefile \
+                test/Makefile \
+                test/unit_test/Makefile \
+                test/experiment/Makefile
+            ])
 AC_OUTPUT
