@@ -22,27 +22,29 @@
 #include <gtest/gtest.h>
 #include <stdlib.h>
 
-using namespace tinystl;
-using namespace std;
+using tinystl::alloc;
+using std::cout;
+using std::endl;
+using std::cerr;
 
 void out_of_memory()
 {
     cerr << "out of memory" << endl;
-    MallocAlloc::set_malloc_handler(nullptr);
+    // alloc::set_malloc_handler(nullptr);
 }
 
 TEST (MallocAlloc, Basic)
 {
-    char* p = (char*)MallocAlloc::allocate(sizeof(int) * 10);
-    p = (char*)MallocAlloc::reallocate((void*)p, sizeof(p), 10);
-    p = (char*)MallocAlloc::reallocate((void*)p, sizeof(p), 20);
-    MallocAlloc::deallocate((void*)p, sizeof(p));
-    MallocAlloc::set_malloc_handler(out_of_memory);
+    char* p = (char*)alloc::allocate(sizeof(int) * 10);
+    p = (char*)alloc::reallocate((void*)p, sizeof(p), 10);
+    p = (char*)alloc::reallocate((void*)p, sizeof(p), 20);
+    alloc::deallocate((void*)p, sizeof(p));
+    // alloc::set_malloc_handler(out_of_memory);
     try
     {
-        p = (char*)MallocAlloc::allocate(200000000000);
+        p = (char*)alloc::allocate(200000000000);
     }
-    catch (exception& e)
+    catch (std::exception& e)
     {
         cout << "Standartd exception: " << e.what() << endl;
     }
