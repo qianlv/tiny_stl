@@ -326,6 +326,34 @@ namespace tinystl
 
     typedef Alloc<0> alloc;
 
+    template <typename T, typename Alloc>
+    class simple_alloc
+    {
+    public:
+        static T* allocate(size_t n)
+        {
+            return n == 0 ? nullptr : (T*)Alloc::allocate(n * sizeof(T));
+        }
+
+        static T* allocate(void)
+        {
+            return (T*)Alloc::allocate(sizeof(T));
+        }
+
+        static void deallocate(T* p, size_t n)
+        {
+            if (0 != n)
+            {
+                Alloc::deallocate(p, n * sizeof(T));
+            }
+        }
+
+        static void deallocate(T* p)
+        {
+            Alloc::deallocate(p, sizeof(T));
+        }
+    };
+
 } // end namespace tinystl
 
 #endif // TINY_STL_ALLOC_H_
