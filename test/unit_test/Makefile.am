@@ -3,7 +3,8 @@ AM_CXXFLAGS = --std=c++11
 SOURCES = unit_test.cpp \
 		  test_alloc.cpp \
 		  test_iterator.cpp \
-		  test_construct.cpp
+		  test_construct.cpp \
+		  test_vector.cpp
 
 noinst_PROGRAMS = unit_test
 unit_test_SOURCES = $(SOURCES)
