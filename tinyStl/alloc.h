@@ -131,7 +131,7 @@ namespace tinystl
         }
     }
 
-    typedef MallocAlloc<0> simple_alloc;
+    typedef MallocAlloc<0> malloc_alloc;
 
     template <int inst>
     class Alloc
@@ -198,7 +198,7 @@ namespace tinystl
     void* Alloc<inst>::allocate(size_t n)
     {
         if (n > MAX_BYTES)
-            return simple_alloc::allocate(n);
+            return malloc_alloc::allocate(n);
         size_t index = FREELIST_INDEX(n);
         obj* free_item = free_lists[index];
         if (static_cast<obj*>(0) == free_item)
@@ -215,7 +215,7 @@ namespace tinystl
     {
         if (n > MAX_BYTES)
         {
-            simple_alloc::deallocate(p, n);
+            malloc_alloc::deallocate(p, n);
         }
         else
         {
@@ -316,7 +316,7 @@ namespace tinystl
                 }
                 end_free = 0;
                 // MallocAlloc, 如果 malloc_handler (out of memery) 也无法获取内存, throw exception.
-                start_free = static_cast<char*>(simple_alloc::allocate(bytes_to_get));
+                start_free = static_cast<char*>(malloc_alloc::allocate(bytes_to_get));
             }
             heap_size += bytes_to_get;
             end_free = start_free + bytes_to_get;
