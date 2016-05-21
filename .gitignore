@@ -24,7 +24,6 @@ autoscan.log
 compile
 
 # 二进制文件
-test/unit_test
 test/experiment/3tag_test
 test/experiment/iterator_associated_types
 test/unit_test/unit_test
