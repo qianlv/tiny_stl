@@ -21,6 +21,7 @@
 
 #include "type_traits.h"
 #include "iterator.h"
+#include "construct.h"
 
 #include <algorithm>
 #include <string.h>
@@ -51,6 +52,7 @@ namespace tinystl
         } catch (...)
         {
             destory(first, cur);
+            throw;
         }
     }
 
@@ -84,6 +86,7 @@ namespace tinystl
         } catch (...)
         {
             destory(first, cur);
+            throw;
         }
     }
 
@@ -113,6 +116,7 @@ namespace tinystl
     template <typename InputIterator, typename ForwardIterator>
     inline ForwardIterator __uninitialized_copy_aux(InputIterator first, InputIterator last, ForwardIterator result, __false_type)
     {
+        // cout << "copy construct" << endl;
         ForwardIterator cur = result;
         try
         {
@@ -124,6 +128,7 @@ namespace tinystl
         } catch(...)
         {
             destory(result, cur);
+            throw;
         }
     }
 
