@@ -1,10 +1,12 @@
 AM_CXXFLAGS = --std=c++11
 
 SOURCES = unit_test.cpp \
+		  test_header.h \
 		  test_alloc.cpp \
 		  test_iterator.cpp \
 		  test_construct.cpp \
-		  test_vector.cpp
+		  test_vector.cpp \
+		  test_list.cpp
 
 noinst_PROGRAMS = unit_test
 unit_test_SOURCES = $(SOURCES)

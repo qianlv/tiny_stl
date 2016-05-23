@@ -17,6 +17,7 @@
  */
 
 #include "tinyStl/vector.h"
+#include "test_header.h"
 
 #include <gtest/gtest.h>
 #include <iostream>
@@ -25,59 +26,6 @@
 
 using std::cout;
 using std::endl;
-
-int ndtor = 0;
-class A
-{
-public:
-    A(int v = 0): value(v) {};
-    ~A() 
-    {
-        ndtor++;
-//        cout << "~A()" << endl;
-    };
-
-    bool operator==(const A& a) const
-    {
-        return value == a.value;
-    }
-
-    bool operator!=(const A& a) const
-    {
-        return !(*this == a);
-    }
-
-    int value;
-    // int value1;
-    // int value2;
-    // int value3;
-    // int value4;
-    // int value5;
-    // int value6;
-    // int value7;
-    // int value8;
-    // int value9;
-    // int value10;
-    // int value11;
-    // int value12;
-    // int value13;
-    // int value14;
-    // int value15;
-    // int value90;
-    // int value91;
-    // int value92;
-    // int value93;
-    // int value94;
-    // int value95;
-    // int value96;
-    // int value97;
-    // int value99;
-    // int value98;
-    // int value910;
-    // int value911;
-    // int value912;
-    // int value913;
-};
 
 bool cmp(const std::vector<A>& l, const tinystl::vector<A>& r)
 {
