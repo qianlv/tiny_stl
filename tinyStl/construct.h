@@ -43,7 +43,7 @@ namespace tinystl
     }
 
     template <typename Iterator>
-    inline void __destory_aux(Iterator first, Iterator last, __true_type)
+    inline void __destory_aux(Iterator /* first */, Iterator /* last */, __true_type)
     {
         // cout << "__true_typ" << endl;
     }
