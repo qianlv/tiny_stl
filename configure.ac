@@ -16,6 +16,7 @@ CXXFLAGS = "--std=c++11"
 AC_SUBST(CXXFLAGS)
 
 # Checks for libraries.
+AC_CHECK_LIB([gtest], [main], [], [exit -1])
 
 # Checks for header files.
 
