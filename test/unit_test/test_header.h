@@ -40,6 +40,21 @@ public:
         return value < a.value;
     }
 
+    bool operator<=(const A& a) const
+    {
+        return value <= a.value;
+    }
+
+    bool operator>(const A& a) const
+    {
+        return value > a.value;
+    }
+
+    bool operator>=(const A& a) const
+    {
+        return value >= a.value;
+    }
+
     int value;
     // int value1;
     // int value2;
