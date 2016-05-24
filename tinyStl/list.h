@@ -241,9 +241,9 @@ namespace tinystl
 
         iterator erase(iterator postion);
         iterator erase(iterator first, iterator last);
-        void swap(const list& li)
+        void swap(list& li)
         {
-            using namespace std;
+            using std::swap;
             swap(node, li.node);
         }
         void resize(size_type n);
@@ -360,13 +360,13 @@ namespace tinystl
 
         void transfer(iterator postion, iterator first, iterator last)
         {
-            if (postion != end())
+            if (postion != last)
             {
                 ((link_type)(last.node->prev))->next = postion.node;
                 ((link_type)(first.node->prev))->next = last.node;
                 ((link_type)(postion.node->prev))->next = first.node;
-                void* tmp = (postion.node->prev);
-                postion.node->prev = last.node->next;
+                link_type tmp = link_type(postion.node->prev);
+                postion.node->prev = last.node->prev;
                 last.node->prev = first.node->prev;
                 first.node->prev = tmp;
             }
@@ -374,7 +374,6 @@ namespace tinystl
 
     private:
         link_type node;
-        /* data */
     };
 
     template <typename T, typename Alloc>
@@ -579,7 +578,6 @@ namespace tinystl
             transfer(postion, x.begin(), x.end());
     }
 
-
     template <typename T, typename Alloc>
     void list<T, Alloc>::splice(iterator postion, list& , iterator i)
     {
@@ -633,7 +631,7 @@ namespace tinystl
         iterator last2 = x.end();
         while (first1 != last1 && first2 != last2)
         {
-            if (cmp(*first1, *first2))
+            if (!cmp(*first1, *first2))
             {
                 iterator next = first2;
                 transfer(first1, first2, ++next);
@@ -658,7 +656,7 @@ namespace tinystl
     template <typename T, typename Alloc>
     void list<T, Alloc>::reverse() noexcept
     {
-        if (node->next == node || (link_type)(node->next)->next == node)
+        if (node->next == node || (link_type(node->next))->next == node)
             return;
         iterator first = begin();
         ++first;
@@ -680,24 +678,26 @@ namespace tinystl
     template <typename Compare>
     void list<T, Alloc>::sort(Compare cmp)
     {
-        if (node->next == node || (link_type)(node->next)->next == node)
+        if (node->next == node || (link_type(node->next))->next == node)
             return;
         
         int fill = 0;
         list<T, Alloc> carry;
-        list<T, Alloc> counter;
+        list<T, Alloc> counter[64];
 
         while (!empty())
         {
             int i = 0;
-            carry.splice(carry.being(), *this, begin());
+            carry.splice(carry.begin(), *this, begin());
+            // cout << "size=" << carry.size() << endl;
+            // cout << "=" <<  begin().node << endl;
             while (i < fill && !counter[i].empty())
             {
                 counter[i].merge(carry, cmp);
                 carry.swap(counter[i++]);
             }
 
-            counter[i].swap(carry);
+            carry.swap(counter[i]);
             if (i == fill) ++fill;
         }
 
